@@ -101,18 +101,25 @@ async function queryDatabase(databaseId?: string) {
   if (!notionToken || !databaseId) return [];
 
   try {
-    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${notionToken}`,
-        "Content-Type": "application/json",
-        "Notion-Version": "2022-06-28",
-      },
-      body: JSON.stringify({
-        sorts: [{ property: "排序", direction: "ascending" }],
-      }),
-      next: { revalidate: 300 },
+    const request = (body: Record<string, unknown>) =>
+      fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${notionToken}`,
+          "Content-Type": "application/json",
+          "Notion-Version": "2022-06-28",
+        },
+        body: JSON.stringify(body),
+        next: { revalidate: 300 },
+      });
+
+    let response = await request({
+      sorts: [{ property: "排序", direction: "ascending" }],
     });
+
+    if (!response.ok) {
+      response = await request({});
+    }
 
     if (!response.ok) return [];
 
