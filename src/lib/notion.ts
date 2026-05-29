@@ -8,6 +8,12 @@ type NotionProperty = {
   checkbox?: boolean;
   number?: number | null;
   url?: string | null;
+  files?: Array<{
+    type?: "file" | "external";
+    name?: string;
+    file?: { url?: string };
+    external?: { url?: string };
+  }>;
 };
 
 type NotionPage = {
@@ -28,6 +34,7 @@ export type NotionHomeFeatured = {
   date: string;
   enabled: boolean;
   order: number;
+  image: string;
 };
 
 export type NotionCatDaily = {
@@ -39,6 +46,7 @@ export type NotionCatDaily = {
   date: string;
   showOnHome: boolean;
   order: number;
+  image: string;
 };
 
 export type NotionObjectItem = {
@@ -50,6 +58,7 @@ export type NotionObjectItem = {
   date: string;
   visible: boolean;
   order: number;
+  image: string;
 };
 
 export const notionToken = process.env.NOTION_TOKEN;
@@ -95,6 +104,11 @@ function number(page: NotionPage, key: string, fallback: number) {
 
 function url(page: NotionPage, key: string) {
   return page.properties[key]?.url || "";
+}
+
+function fileUrl(page: NotionPage, key: string) {
+  const file = page.properties[key]?.files?.[0];
+  return file?.file?.url || file?.external?.url || "";
 }
 
 async function queryDatabase(databaseId?: string) {
@@ -192,6 +206,7 @@ export async function getHomeFeaturedFromNotion() {
       date: date(page, "日期"),
       enabled: checkbox(page, "是否启用"),
       order: number(page, "排序", index + 1),
+      image: fileUrl(page, "图片"),
     }))
     .filter((item) => item.enabled && item.title)
     .sort((a, b) => a.order - b.order);
@@ -219,6 +234,7 @@ export async function getCatsDailyFromNotion() {
         date: date(page, "日期"),
         showOnHome: checkbox(page, "是否首页显示"),
         order: number(page, "排序", index + 1),
+        image: fileUrl(page, "图片"),
       };
     })
     .filter((item) => item.title && item.summary)
@@ -238,6 +254,7 @@ export async function getObjectsCollectionFromNotion() {
       date: date(page, "日期"),
       visible: checkbox(page, "是否展示"),
       order: number(page, "排序", index + 1),
+      image: fileUrl(page, "图片"),
     }))
     .filter((item) => item.visible && item.name)
     .sort((a, b) => a.order - b.order);

@@ -144,7 +144,7 @@ export default async function HomePage() {
         category: item.source || "精选",
         title: item.title,
         description: item.summary,
-        image: selectedWorkImages[index % selectedWorkImages.length],
+        image: item.image || selectedWorkImages[index % selectedWorkImages.length],
       }))
     : selectedWorks;
 

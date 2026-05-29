@@ -137,7 +137,7 @@ export default async function CatsPage() {
         cat: note.cat,
         title: note.title,
         date: note.date,
-        image: fallbackImages[index % fallbackImages.length],
+        image: note.image || fallbackImages[index % fallbackImages.length],
         body: note.summary,
       }))
     : fallbackCatNotes;
