@@ -1,0 +1,63 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "LinChengSerif";
+  src: url("/fonts/Songti.ttc") format("truetype-collection");
+  font-display: swap;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream text-ink antialiased;
+  }
+
+  ::selection {
+    @apply bg-tag text-ink;
+  }
+}
+
+@layer components {
+  .paper-texture {
+    @apply bg-cream;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  .prose-lincheng h2 {
+    @apply mb-4 mt-10 font-serif text-2xl text-ink;
+  }
+
+  .prose-lincheng h3 {
+    @apply mb-3 mt-8 font-serif text-xl text-ink;
+  }
+
+  .prose-lincheng p {
+    margin-bottom: 1.5rem;
+    font-size: 17px;
+    line-height: 1.9;
+    color: rgba(44, 36, 22, 0.9);
+  }
+
+  .prose-lincheng blockquote {
+    @apply my-8 border-l-2 border-tea pl-6 italic text-warm-gray;
+  }
+
+  .prose-lincheng ul {
+    @apply mb-6 list-disc space-y-2 pl-6;
+    font-size: 17px;
+    line-height: 1.9;
+  }
+
+  .prose-lincheng strong {
+    @apply font-medium text-ink;
+  }
+
+  .prose-lincheng img {
+    @apply my-8 rounded-lg;
+  }
+}
