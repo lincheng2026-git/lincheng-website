@@ -2,6 +2,7 @@ import Image from "next/image";
 import { PageHeader } from "@/components/PageHeader";
 import { FadeIn } from "@/components/FadeIn";
 import { images } from "@/lib/images";
+import { getObjectsCollectionFromNotion } from "@/lib/notion";
 
 const learningItems = [
   {
@@ -48,7 +49,7 @@ const learningItems = [
   },
 ];
 
-const inventory = [
+const fallbackInventory = [
   {
     name: "青瓷茶杯",
     type: "茶杯",
@@ -133,7 +134,10 @@ const teaSpace = [
 
 export const metadata = { title: "东方器物" };
 
-export default function CeramicsPage() {
+export default async function CeramicsPage() {
+  const notionObjects = await getObjectsCollectionFromNotion();
+  const inventory = notionObjects.length ? notionObjects : fallbackInventory;
+
   return (
     <div className="paper-texture pb-24">
       <PageHeader

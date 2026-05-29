@@ -3,6 +3,7 @@ import Image from "next/image";
 import { FadeIn } from "@/components/FadeIn";
 import { siteConfig } from "@/lib/data";
 import { images } from "@/lib/images";
+import { getHomeFeaturedFromNotion } from "@/lib/notion";
 
 const momentCollected = {
   image: images.songSpaceBambooRain,
@@ -119,7 +120,34 @@ const selectedWorks = [
   },
 ];
 
-export default function HomePage() {
+const selectedWorkImages = [
+  images.journalCatWindowCover,
+  images.galleryTeaRoom,
+  images.handbookWinterTea,
+  images.aiTimelineBamboo,
+];
+
+export default async function HomePage() {
+  const notionHomeFeatured = await getHomeFeaturedFromNotion();
+  const notionRecentNotes = notionHomeFeatured.filter((item) => item.module === "最近记录");
+  const notionSelectedWorks = notionHomeFeatured.filter((item) => item.module === "精选作品");
+  const homeRecentNotes = notionRecentNotes.length
+    ? notionRecentNotes.map((item) => ({
+        tag: item.source || "生活记录",
+        title: item.title,
+        body: item.summary,
+        date: item.date,
+      }))
+    : recentNotes;
+  const homeSelectedWorks = notionSelectedWorks.length
+    ? notionSelectedWorks.map((item, index) => ({
+        category: item.source || "精选",
+        title: item.title,
+        description: item.summary,
+        image: selectedWorkImages[index % selectedWorkImages.length],
+      }))
+    : selectedWorks;
+
   return (
     <>
       {/* Hero */}
@@ -309,7 +337,7 @@ export default function HomePage() {
           </FadeIn>
 
           <div className="mt-12 grid gap-6 md:grid-cols-3">
-            {recentNotes.map((note, i) => (
+            {homeRecentNotes.map((note, i) => (
               <FadeIn key={note.title} delay={i * 0.08}>
                 <article className="h-full rounded-lg border border-divider/45 bg-warm-white/80 p-7 shadow-[0_10px_30px_rgba(80,64,42,0.04)]">
                   <p className="text-xs tracking-[0.18em] text-tea/70">{note.tag}</p>
@@ -342,7 +370,7 @@ export default function HomePage() {
           </FadeIn>
 
           <div className="mt-12 grid gap-7 sm:grid-cols-2 lg:grid-cols-4">
-            {selectedWorks.map((work, i) => (
+            {homeSelectedWorks.map((work, i) => (
               <FadeIn key={work.title} delay={i * 0.08}>
                 <article className="group">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-card">
