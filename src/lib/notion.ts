@@ -52,9 +52,9 @@ export type NotionObjectItem = {
   order: number;
 };
 
-const notionToken = process.env.NOTION_TOKEN;
+export const notionToken = process.env.NOTION_TOKEN;
 
-const databaseIds = {
+export const databaseIds = {
   home: process.env.NOTION_HOME_FEATURED_DATABASE_ID,
   cats: process.env.NOTION_CATS_DAILY_DATABASE_ID,
   objects: process.env.NOTION_OBJECTS_COLLECTION_DATABASE_ID,
@@ -120,6 +120,55 @@ async function queryDatabase(databaseId?: string) {
     return data.results || [];
   } catch {
     return [];
+  }
+}
+
+export async function checkNotionDatabase(databaseId?: string) {
+  if (!notionToken || !databaseId) {
+    return {
+      configured: Boolean(notionToken && databaseId),
+      ok: false,
+      count: 0,
+      error: !notionToken ? "Missing NOTION_TOKEN" : "Missing database id",
+    };
+  }
+
+  try {
+    const response = await fetch(`https://api.notion.com/v1/databases/${databaseId}/query`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${notionToken}`,
+        "Content-Type": "application/json",
+        "Notion-Version": "2022-06-28",
+      },
+      body: JSON.stringify({ page_size: 10 }),
+      cache: "no-store",
+    });
+
+    const data = await response.json().catch(() => null);
+
+    if (!response.ok) {
+      return {
+        configured: true,
+        ok: false,
+        count: 0,
+        error: data?.message || `Notion API ${response.status}`,
+      };
+    }
+
+    return {
+      configured: true,
+      ok: true,
+      count: Array.isArray(data?.results) ? data.results.length : 0,
+      error: null,
+    };
+  } catch (error) {
+    return {
+      configured: true,
+      ok: false,
+      count: 0,
+      error: error instanceof Error ? error.message : "Unknown error",
+    };
   }
 }
 
