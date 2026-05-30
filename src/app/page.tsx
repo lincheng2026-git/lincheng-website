@@ -131,8 +131,35 @@ const selectedWorkImages = [
 
 export default async function HomePage() {
   const notionHomeFeatured = await getHomeFeaturedFromNotion();
+  const notionEmotionEntries = notionHomeFeatured.filter((item) => item.module === "情绪入口");
   const notionRecentNotes = notionHomeFeatured.filter((item) => item.module === "最近记录");
   const notionSelectedWorks = notionHomeFeatured.filter((item) => item.module === "精选作品");
+  const homeEmotionEntries = {
+    featured: notionEmotionEntries[0]
+      ? {
+          href: notionEmotionEntries[0].href || emotionEntries.featured.href,
+          eyebrow: notionEmotionEntries[0].source || emotionEntries.featured.eyebrow,
+          title: notionEmotionEntries[0].title,
+          description: notionEmotionEntries[0].summary || emotionEntries.featured.description,
+          action: notionEmotionEntries[0].action || emotionEntries.featured.action,
+          image: notionEmotionEntries[0].image || emotionEntries.featured.image,
+        }
+      : emotionEntries.featured,
+    secondary: notionEmotionEntries.length > 1
+      ? notionEmotionEntries.slice(1, 4).map((item, index) => {
+          const fallback = emotionEntries.secondary[index % emotionEntries.secondary.length];
+
+          return {
+            href: item.href || fallback.href,
+            eyebrow: item.source || fallback.eyebrow,
+            title: item.title,
+            description: item.summary || fallback.description,
+            action: item.action || fallback.action,
+            image: item.image || fallback.image,
+          };
+        })
+      : emotionEntries.secondary,
+  };
   const homeRecentNotes = notionRecentNotes.length
     ? notionRecentNotes.map((item) => ({
         tag: item.source || "生活记录",
@@ -254,12 +281,12 @@ export default async function HomePage() {
           <div className="mt-14 space-y-8">
             <FadeIn delay={0.05}>
               <Link
-                href={emotionEntries.featured.href}
+                href={homeEmotionEntries.featured.href}
                 className="group relative block min-h-[360px] overflow-hidden rounded-lg shadow-card md:min-h-[460px]"
               >
                 <Image
-                  src={emotionEntries.featured.image}
-                  alt={emotionEntries.featured.title}
+                  src={homeEmotionEntries.featured.image}
+                  alt={homeEmotionEntries.featured.title}
                   fill
                   className="object-cover transition duration-500 group-hover:scale-[1.025] group-hover:brightness-105"
                   sizes="(max-width: 768px) 100vw, 1200px"
@@ -268,23 +295,23 @@ export default async function HomePage() {
                 <div className="absolute inset-0 rounded-lg border border-warm-white/15" />
                 <div className="absolute bottom-0 left-0 max-w-2xl p-7 text-warm-white md:p-10">
                   <p className="font-display text-xs tracking-[0.28em] text-warm-white/75">
-                    {emotionEntries.featured.eyebrow}
+                    {homeEmotionEntries.featured.eyebrow}
                   </p>
                   <h3 className="mt-3 font-serif text-3xl leading-tight md:text-5xl">
-                    {emotionEntries.featured.title}
+                    {homeEmotionEntries.featured.title}
                   </h3>
                   <p className="mt-4 max-w-xl text-sm leading-relaxed text-warm-white/88 md:text-base">
-                    {emotionEntries.featured.description}
+                    {homeEmotionEntries.featured.description}
                   </p>
                   <span className="mt-6 inline-block text-sm tracking-wide text-warm-white/90">
-                    {emotionEntries.featured.action}
+                    {homeEmotionEntries.featured.action}
                   </span>
                 </div>
               </Link>
             </FadeIn>
 
             <div className="grid gap-6 md:grid-cols-3">
-              {emotionEntries.secondary.map((entry, i) => (
+              {homeEmotionEntries.secondary.map((entry, i) => (
                 <FadeIn key={entry.href} delay={0.12 + i * 0.08}>
                   <Link
                     href={entry.href}

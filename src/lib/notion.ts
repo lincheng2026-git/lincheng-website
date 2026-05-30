@@ -31,6 +31,7 @@ export type NotionHomeFeatured = {
   source: string;
   summary: string;
   href: string;
+  action: string;
   date: string;
   enabled: boolean;
   order: number;
@@ -203,6 +204,7 @@ export async function getHomeFeaturedFromNotion() {
       source: select(page, "来源栏目"),
       summary: text(page, "摘要"),
       href: url(page, "链接"),
+      action: text(page, "按钮") || text(page, "链接文字"),
       date: date(page, "日期"),
       enabled: checkbox(page, "是否启用"),
       order: number(page, "排序", index + 1),
