@@ -82,6 +82,26 @@ function text(page: NotionPage, key: string) {
   return plainText(page.properties[key]?.rich_text);
 }
 
+function firstText(page: NotionPage, keys: string[]) {
+  for (const key of keys) {
+    const value = text(page, key);
+
+    if (value) return value;
+  }
+
+  return "";
+}
+
+function firstSelect(page: NotionPage, keys: string[]) {
+  for (const key of keys) {
+    const value = select(page, key);
+
+    if (value) return value;
+  }
+
+  return "";
+}
+
 function select(page: NotionPage, key: string) {
   return page.properties[key]?.select?.name || "";
 }
@@ -105,6 +125,16 @@ function number(page: NotionPage, key: string, fallback: number) {
 
 function url(page: NotionPage, key: string) {
   return page.properties[key]?.url || "";
+}
+
+function firstUrl(page: NotionPage, keys: string[]) {
+  for (const key of keys) {
+    const value = url(page, key);
+
+    if (value) return value;
+  }
+
+  return "";
 }
 
 function fileUrl(page: NotionPage, key: string) {
@@ -205,10 +235,10 @@ export async function getHomeFeaturedFromNotion() {
     .map((page, index): NotionHomeFeatured => ({
       title: title(page, "标题"),
       module: select(page, "模块"),
-      source: select(page, "来源栏目"),
-      summary: text(page, "摘要"),
-      href: url(page, "链接"),
-      action: text(page, "按钮") || text(page, "链接文字"),
+      source: firstSelect(page, ["来源栏目", "英文小字", "分类", "标签"]),
+      summary: firstText(page, ["摘要", "卡片描述文字", "描述", "内容", "正文"]),
+      href: firstUrl(page, ["链接", "跳转链接", "页面链接"]),
+      action: firstText(page, ["按钮", "按钮文字", "链接文字"]),
       date: date(page, "日期"),
       enabled: checkbox(page, "是否启用"),
       order: number(page, "排序", index + 1),
