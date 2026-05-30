@@ -131,9 +131,17 @@ const selectedWorkImages = [
 
 export default async function HomePage() {
   const notionHomeFeatured = await getHomeFeaturedFromNotion();
+  const notionMomentCollected = notionHomeFeatured.find((item) => item.module === "片刻收藏");
   const notionEmotionEntries = notionHomeFeatured.filter((item) => item.module === "情绪入口");
   const notionRecentNotes = notionHomeFeatured.filter((item) => item.module === "最近记录");
   const notionSelectedWorks = notionHomeFeatured.filter((item) => item.module === "精选作品");
+  const homeMomentCollected = notionMomentCollected
+    ? {
+        image: notionMomentCollected.image || momentCollected.image,
+        body: notionMomentCollected.summary || momentCollected.body,
+        date: notionMomentCollected.date || notionMomentCollected.source || momentCollected.date,
+      }
+    : momentCollected;
   const homeEmotionEntries = {
     featured: notionEmotionEntries[0]
       ? {
@@ -248,7 +256,7 @@ export default async function HomePage() {
               <div className="group relative overflow-hidden rounded-lg shadow-card">
                 <div className="relative aspect-[16/10] md:aspect-[5/3]">
                   <Image
-                    src={momentCollected.image}
+                    src={homeMomentCollected.image}
                     alt="雨后竹影与暖灯"
                     fill
                     className="object-cover transition duration-500 group-hover:scale-[1.02] group-hover:brightness-105"
@@ -260,10 +268,10 @@ export default async function HomePage() {
 
               <div className="md:pr-4">
                 <p className="whitespace-pre-line font-fangsong text-[18px] leading-[2] text-ink/86 md:text-xl">
-                  {momentCollected.body}
+                  {homeMomentCollected.body}
                 </p>
                 <p className="mt-8 text-sm tracking-[0.12em] text-tea/65">
-                  {momentCollected.date}
+                  {homeMomentCollected.date}
                 </p>
               </div>
             </div>
