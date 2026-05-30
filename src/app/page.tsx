@@ -8,6 +8,8 @@ import { getHomeFeaturedFromNotion } from "@/lib/notion";
 export const dynamic = "force-dynamic";
 
 const momentCollected = {
+  title: "片刻收藏",
+  eyebrow: "Moments Collected",
   image: images.songSpaceBambooRain,
   body: `最近开始越来越喜欢：
 
@@ -137,6 +139,8 @@ export default async function HomePage() {
   const notionSelectedWorks = notionHomeFeatured.filter((item) => item.module === "精选作品");
   const homeMomentCollected = notionMomentCollected
     ? {
+        title: notionMomentCollected.title || momentCollected.title,
+        eyebrow: notionMomentCollected.source || momentCollected.eyebrow,
         image: notionMomentCollected.image || momentCollected.image,
         body: notionMomentCollected.summary || momentCollected.body,
         date: notionMomentCollected.date || notionMomentCollected.source || momentCollected.date,
@@ -245,9 +249,9 @@ export default async function HomePage() {
           <FadeIn>
             <div className="text-center">
               <p className="font-display text-xs tracking-[0.28em] text-warm-gray/75">
-                Moments Collected
+                {homeMomentCollected.eyebrow}
               </p>
-              <h2 className="mt-3 font-serif text-3xl text-ink">片刻收藏</h2>
+              <h2 className="mt-3 font-serif text-3xl text-ink">{homeMomentCollected.title}</h2>
             </div>
           </FadeIn>
 
