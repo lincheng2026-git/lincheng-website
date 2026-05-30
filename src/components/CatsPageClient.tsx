@@ -100,6 +100,7 @@ export function CatsPageClient({ notes: catNotes }: { notes: CatNote[] }) {
                     src={note.image}
                     alt={note.title}
                     fill
+                    unoptimized
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 50vw"
                   />

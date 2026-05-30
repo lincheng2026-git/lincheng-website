@@ -2,13 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
-const allowedHosts = new Set([
-  "www.notion.so",
-  "prod-files-secure.s3.us-west-2.amazonaws.com",
-  "s3.us-west-2.amazonaws.com",
-  "s3.us-west-1.amazonaws.com",
-  "s3.amazonaws.com",
-]);
+function isAllowedImageHost(hostname: string) {
+  return hostname === "www.notion.so" || hostname.endsWith(".notion.so") || hostname.endsWith(".amazonaws.com");
+}
 
 export async function GET(request: NextRequest) {
   const rawUrl = request.nextUrl.searchParams.get("url");
@@ -25,7 +21,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Invalid image url" }, { status: 400 });
   }
 
-  if (imageUrl.protocol !== "https:" || !allowedHosts.has(imageUrl.hostname)) {
+  if (imageUrl.protocol !== "https:" || !isAllowedImageHost(imageUrl.hostname)) {
     return NextResponse.json({ error: "Unsupported image host" }, { status: 400 });
   }
 

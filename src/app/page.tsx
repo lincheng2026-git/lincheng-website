@@ -263,6 +263,7 @@ export default async function HomePage() {
                     src={homeMomentCollected.image}
                     alt="雨后竹影与暖灯"
                     fill
+                    unoptimized
                     className="object-cover transition duration-500 group-hover:scale-[1.02] group-hover:brightness-105"
                     sizes="(max-width: 768px) 100vw, 560px"
                   />
@@ -300,6 +301,7 @@ export default async function HomePage() {
                   src={homeEmotionEntries.featured.image}
                   alt={homeEmotionEntries.featured.title}
                   fill
+                  unoptimized
                   className="object-cover transition duration-500 group-hover:scale-[1.025] group-hover:brightness-105"
                   sizes="(max-width: 768px) 100vw, 1200px"
                 />
@@ -333,6 +335,7 @@ export default async function HomePage() {
                       src={entry.image}
                       alt={entry.title}
                       fill
+                      unoptimized
                       className="object-cover transition duration-500 group-hover:scale-[1.03] group-hover:brightness-105"
                       sizes="(max-width: 768px) 100vw, 33vw"
                     />
@@ -419,6 +422,7 @@ export default async function HomePage() {
                       src={work.image}
                       alt={work.title}
                       fill
+                      unoptimized
                       className="object-cover transition duration-500 group-hover:scale-[1.03] group-hover:brightness-105"
                       sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
                     />
