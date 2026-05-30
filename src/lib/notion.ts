@@ -109,7 +109,11 @@ function url(page: NotionPage, key: string) {
 
 function fileUrl(page: NotionPage, key: string) {
   const file = page.properties[key]?.files?.[0];
-  return file?.file?.url || file?.external?.url || "";
+  const rawUrl = file?.file?.url || file?.external?.url || "";
+
+  if (!rawUrl) return "";
+
+  return `/api/notion-image?url=${encodeURIComponent(rawUrl)}`;
 }
 
 async function queryDatabase(databaseId?: string) {
