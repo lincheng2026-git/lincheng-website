@@ -118,6 +118,16 @@ function firstSelect(page: NotionPage, keys: string[]) {
   return "";
 }
 
+function firstSelectOrText(page: NotionPage, keys: string[]) {
+  for (const key of keys) {
+    const value = select(page, key) || text(page, key);
+
+    if (value) return value;
+  }
+
+  return "";
+}
+
 function select(page: NotionPage, key: string) {
   return page.properties[key]?.select?.name || "";
 }
@@ -322,9 +332,9 @@ export async function getSiteModulesFromNotion(pageName: string) {
   return pages
     .map((page, index): NotionSiteModule => ({
       title: title(page, "标题"),
-      page: firstSelect(page, ["页面", "所属页面"]),
-      module: firstSelect(page, ["模块", "模块名称"]),
-      eyebrow: firstText(page, ["英文小字", "副标题", "小标题"]) || firstSelect(page, ["英文小字", "副标题", "小标题"]),
+      page: firstSelectOrText(page, ["页面", "所属页面"]),
+      module: firstSelectOrText(page, ["模块", "模块名称"]),
+      eyebrow: firstText(page, ["英文小字", "副标题", "小标题"]) || firstSelectOrText(page, ["英文小字", "副标题", "小标题"]),
       body: firstText(page, ["内容", "正文", "摘要", "描述", "卡片描述文字"]),
       tags: multiSelectArray(page, "标签"),
       href: firstUrl(page, ["链接", "跳转链接", "页面链接"]),
