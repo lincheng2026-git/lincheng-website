@@ -77,6 +77,11 @@ export type NotionSiteModule = {
   image: string;
 };
 
+export type NotionAestheticAiModule = NotionSiteModule & {
+  image2: string;
+  color: string;
+};
+
 export const notionToken = process.env.NOTION_TOKEN;
 
 export const databaseIds = {
@@ -84,6 +89,7 @@ export const databaseIds = {
   cats: process.env.NOTION_CATS_DAILY_DATABASE_ID,
   objects: process.env.NOTION_OBJECTS_COLLECTION_DATABASE_ID,
   siteModules: process.env.NOTION_SITE_MODULES_DATABASE_ID,
+  aestheticAi: process.env.NOTION_AESTHETIC_AI_DATABASE_ID,
 };
 
 function plainText(items?: Array<{ plain_text?: string }>) {
@@ -140,13 +146,28 @@ function multiSelectArray(page: NotionPage, key: string) {
   return page.properties[key]?.multi_select?.flatMap((item) => (item.name ? [item.name] : [])) || [];
 }
 
+function tags(page: NotionPage, key: string) {
+  const values = multiSelectArray(page, key);
+  if (values.length) return values;
+
+  return (text(page, key) || select(page, key))
+    .split(/[,，、;]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
 function date(page: NotionPage, key: string) {
   const value = page.properties[key]?.date?.start || "";
-  return value.replaceAll("-", ".");
+  return (value || text(page, key)).replaceAll("-", ".");
 }
 
 function checkbox(page: NotionPage, key: string) {
   return Boolean(page.properties[key]?.checkbox);
+}
+
+function enabled(page: NotionPage) {
+  const value = (text(page, "是否启用") || select(page, "是否启用")).toLowerCase();
+  return checkbox(page, "是否启用") || checkbox(page, "是否显示") || ["true", "yes", "1", "是", "启用"].includes(value);
 }
 
 function number(page: NotionPage, key: string, fallback: number) {
@@ -336,13 +357,38 @@ export async function getSiteModulesFromNotion(pageName: string) {
       module: firstSelectOrText(page, ["模块", "模块名称"]),
       eyebrow: firstText(page, ["英文小字", "副标题", "小标题"]) || firstSelectOrText(page, ["英文小字", "副标题", "小标题"]),
       body: firstText(page, ["内容", "正文", "摘要", "描述", "卡片描述文字"]),
-      tags: multiSelectArray(page, "标签"),
+      tags: tags(page, "标签"),
       href: firstUrl(page, ["链接", "跳转链接", "页面链接"]),
       action: firstText(page, ["按钮", "按钮文字", "链接文字"]),
       date: date(page, "日期"),
-      enabled: checkbox(page, "是否启用") || checkbox(page, "是否显示"),
+      enabled: enabled(page),
       order: number(page, "排序", index + 1),
       image: fileUrl(page, "图片"),
+    }))
+    .filter((item) => item.enabled && item.page === pageName && item.title)
+    .sort((a, b) => a.order - b.order);
+}
+
+
+export async function getAestheticAiModulesFromNotion(pageName: string) {
+  const pages = await queryDatabase(databaseIds.aestheticAi);
+
+  return pages
+    .map((page, index): NotionAestheticAiModule => ({
+      title: title(page, "标题"),
+      page: firstSelectOrText(page, ["页面", "所属页面"]),
+      module: firstSelectOrText(page, ["模块", "模块名称"]),
+      eyebrow: firstText(page, ["英文小字", "副标题", "小标题"]) || firstSelectOrText(page, ["英文小字", "副标题", "小标题"]),
+      body: firstText(page, ["内容", "正文", "摘要", "描述", "卡片描述文字"]),
+      tags: tags(page, "标签"),
+      href: firstUrl(page, ["链接", "跳转链接", "页面链接"]),
+      action: firstText(page, ["按钮", "按钮文字", "链接文字"]),
+      date: date(page, "日期"),
+      enabled: enabled(page),
+      order: number(page, "排序", index + 1),
+      image: fileUrl(page, "图片"),
+      image2: fileUrl(page, "图片2"),
+      color: firstText(page, ["色值", "颜色", "HEX"]),
     }))
     .filter((item) => item.enabled && item.page === pageName && item.title)
     .sort((a, b) => a.order - b.order);

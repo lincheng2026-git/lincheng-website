@@ -2,6 +2,9 @@ import Image from "next/image";
 import { PageHeader } from "@/components/PageHeader";
 import { FadeIn } from "@/components/FadeIn";
 import { images } from "@/lib/images";
+import { getAestheticAiModulesFromNotion } from "@/lib/notion";
+
+export const dynamic = "force-dynamic";
 
 const colorNotes = [
   {
@@ -113,13 +116,59 @@ const collectedThings = [
   },
 ];
 
-export default function SongAestheticPage() {
+export default async function SongAestheticPage() {
+  const notionModules = await getAestheticAiModulesFromNotion("宋式美学");
+  const getModule = (module: string) => notionModules.filter((item) => item.module === module);
+  const pageHeader = getModule("页面标题")[0];
+  const intro = getModule("首屏说明")[0];
+  const notionColorNotes = getModule("颜色札记");
+  const notionColors = getModule("色卡");
+  const notionLifeNotes = getModule("生活里的宋式感");
+  const notionCollections = getModule("最近收藏");
+
+  const colorNoteItems = notionColorNotes.length
+    ? notionColorNotes.map((item, index) => {
+        const fallback = colorNotes[index % colorNotes.length];
+        return {
+          title: item.title,
+          image: item.image || fallback.image,
+          body: item.body || fallback.body,
+        };
+      })
+    : colorNotes;
+
+  const colorItems = notionColors.length
+    ? notionColors.map((item, index) => {
+        const fallback = smallColors[index % smallColors.length];
+        return {
+          name: item.title,
+          hex: item.color || fallback.hex,
+          note: item.body || fallback.note,
+        };
+      })
+    : smallColors;
+
+  const lifeNoteItems = notionLifeNotes.length
+    ? notionLifeNotes.map((item) => ({ title: item.title, body: item.body }))
+    : lifeNotes;
+
+  const collectionItems = notionCollections.length
+    ? notionCollections.map((item, index) => {
+        const fallback = collectedThings[index % collectedThings.length];
+        return {
+          title: item.title,
+          note: item.body || fallback.note,
+          image: item.image || fallback.image,
+        };
+      })
+    : collectedThings;
+
   return (
     <div className="paper-texture pb-24">
       <PageHeader
-        title="宋式美学"
-        subtitle="Song Aesthetic"
-        description={`最近开始越来越喜欢：
+        title={pageHeader?.title || "宋式美学"}
+        subtitle={pageHeader?.eyebrow || "Song Aesthetic"}
+        description={pageHeader?.body || `最近开始越来越喜欢：
 旧纸的颜色、暖灯下的木头，
 以及那些很安静的东西。`}
       />
@@ -129,24 +178,27 @@ export default function SongAestheticPage() {
           <section className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
             <div>
               <p className="font-display text-xs tracking-[0.24em] text-warm-gray/75">
-                Color Notes
+                {intro?.eyebrow || "Color Notes"}
               </p>
-              <h2 className="mt-3 font-serif text-3xl text-ink">最近喜欢的颜色</h2>
-              <p className="mt-6 text-[17px] leading-[1.9] text-ink/82">
-                现在看颜色，越来越少想它“高级不高级”。更在意的是：放在桌上、纸上、灯下的时候，会不会让人觉得舒服。
+              <h2 className="mt-3 font-serif text-3xl text-ink">
+                {intro?.title || "最近喜欢的颜色"}
+              </h2>
+              <p className="mt-6 whitespace-pre-line text-[17px] leading-[1.9] text-ink/82">
+                {intro?.body || "现在看颜色，越来越少想它“高级不高级”。更在意的是：放在桌上、纸上、灯下的时候，会不会让人觉得舒服。"}
               </p>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-card sm:col-span-2">
                 <Image
-                  src={images.handbookWinterTea}
-                  alt="纸张、茶与暖光"
+                  src={intro?.image || images.handbookWinterTea}
+                  alt={intro?.title || "纸张、茶与暖光"}
                   fill
+                  unoptimized
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 620px"
                 />
               </div>
-              {smallColors.slice(0, 2).map((color) => (
+              {colorItems.slice(0, 2).map((color) => (
                 <div key={color.name} className="rounded-lg border border-divider/40 bg-warm-white p-4">
                   <span
                     className="block h-8 w-12 rounded border border-divider/30"
@@ -161,7 +213,7 @@ export default function SongAestheticPage() {
         </FadeIn>
 
         <div className="mt-24 space-y-20">
-          {colorNotes.map((note, index) => (
+          {colorNoteItems.map((note, index) => (
             <FadeIn key={note.title} delay={index * 0.08}>
               <section
                 className={`grid gap-10 lg:grid-cols-2 lg:items-center ${
@@ -173,6 +225,7 @@ export default function SongAestheticPage() {
                     src={note.image}
                     alt={note.title}
                     fill
+                    unoptimized
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 560px"
                   />
@@ -192,7 +245,7 @@ export default function SongAestheticPage() {
           <section className="rounded-lg bg-warm-white/75 p-7 shadow-[0_12px_34px_rgba(80,64,42,0.045)] md:p-9">
             <h2 className="text-center font-serif text-3xl text-ink">最近喜欢的颜色</h2>
             <div className="mt-8 grid gap-4 md:grid-cols-4">
-              {smallColors.map((color) => (
+              {colorItems.map((color) => (
                 <div key={color.name} className="rounded-lg border border-divider/40 bg-paper/70 p-5">
                   <span
                     className="block h-7 w-12 rounded border border-divider/30"
@@ -215,7 +268,7 @@ export default function SongAestheticPage() {
               <h2 className="mt-3 font-serif text-3xl text-ink">生活里的宋式感</h2>
             </div>
             <div className="mt-10 grid gap-6 md:grid-cols-3">
-              {lifeNotes.map((note) => (
+              {lifeNoteItems.map((note) => (
                 <article
                   key={note.title}
                   className="rounded-lg border border-divider/40 bg-warm-white/70 p-7"
@@ -239,13 +292,14 @@ export default function SongAestheticPage() {
               <h2 className="mt-3 font-serif text-3xl text-ink">最近收藏</h2>
             </div>
             <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-              {collectedThings.map((item) => (
+              {collectionItems.map((item) => (
                 <article key={item.title} className="group">
                   <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-card">
                     <Image
                       src={item.image}
                       alt={item.title}
                       fill
+                      unoptimized
                       className="object-cover transition duration-500 group-hover:scale-[1.03]"
                       sizes="(max-width: 640px) 100vw, 25vw"
                     />
