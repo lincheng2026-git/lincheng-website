@@ -2,7 +2,7 @@ import Image from "next/image";
 import { PageHeader } from "@/components/PageHeader";
 import { FadeIn } from "@/components/FadeIn";
 import { images } from "@/lib/images";
-import { getObjectsCollectionFromNotion } from "@/lib/notion";
+import { getObjectsCollectionFromNotion, getSiteModulesFromNotion } from "@/lib/notion";
 
 export const dynamic = "force-dynamic";
 
@@ -137,15 +137,49 @@ const teaSpace = [
 export const metadata = { title: "东方器物" };
 
 export default async function CeramicsPage() {
-  const notionObjects = await getObjectsCollectionFromNotion();
+  const [notionObjects, notionModules] = await Promise.all([
+    getObjectsCollectionFromNotion(),
+    getSiteModulesFromNotion("东方器物"),
+  ]);
+  const getModule = (module: string) => notionModules.filter((item) => item.module === module);
+  const pageHeader = getModule("页面标题")[0];
+  const heroCard = getModule("首屏茶桌")[0];
+  const notionLearningItems = getModule("慢慢喜欢上的器物");
+  const teaRecord = getModule("茶桌记录")[0];
+  const notionChoosingNotes = getModule("买前会想的事");
+  const teaCornerIntro = getModule("常待的喝茶角落说明")[0];
+  const notionTeaSpace = getModule("常待的喝茶角落");
   const inventory = notionObjects.length ? notionObjects : fallbackInventory;
+  const learningItemList = notionLearningItems.length
+    ? notionLearningItems.map((item) => ({
+        title: item.title,
+        body: item.body,
+      }))
+    : learningItems;
+  const choosingNoteList = notionChoosingNotes.length
+    ? notionChoosingNotes.map((item) => ({
+        title: item.title,
+        body: item.body,
+      }))
+    : choosingNotes;
+  const teaSpaceList = notionTeaSpace.length
+    ? notionTeaSpace.map((item, index) => {
+        const fallback = teaSpace[index % teaSpace.length];
+
+        return {
+          title: item.title,
+          note: item.body || fallback.note,
+          image: item.image || fallback.image,
+        };
+      })
+    : teaSpace;
 
   return (
     <div className="paper-texture pb-24">
       <PageHeader
-        title="东方器物"
-        subtitle="Ceramics"
-        description="收集喜欢的茶具，记录喝茶这件小事。"
+        title={pageHeader?.title || "东方器物"}
+        subtitle={pageHeader?.eyebrow || "Ceramics"}
+        description={pageHeader?.body || "收集喜欢的茶具，记录喝茶这件小事。"}
       />
 
       <div className="mx-auto max-w-content px-5 md:px-10 lg:px-20">
@@ -153,21 +187,22 @@ export default async function CeramicsPage() {
           <section>
             <div className="relative aspect-[16/7] min-h-[280px] overflow-hidden rounded-lg shadow-card">
               <Image
-                src={images.handbookWinterTea}
-                alt="茶桌、茶杯与暖光"
+                src={heroCard?.image || images.handbookWinterTea}
+                alt={heroCard?.title || "茶桌、茶杯与暖光"}
                 fill
                 priority
+                unoptimized
                 className="object-cover brightness-[1.04] saturate-[0.92]"
                 sizes="1200px"
               />
               <div className="absolute inset-0 bg-gradient-to-r from-ink/28 via-ink/8 to-transparent" />
               <div className="absolute bottom-0 left-0 max-w-xl p-7 text-warm-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.35)] md:p-9">
                 <p className="font-display text-xs tracking-[0.24em] text-warm-white/85">
-                  Tea Life
+                  {heroCard?.eyebrow || "Tea Life"}
                 </p>
-                <h2 className="mt-3 font-serif text-3xl md:text-4xl">日常茶桌</h2>
+                <h2 className="mt-3 font-serif text-3xl md:text-4xl">{heroCard?.title || "日常茶桌"}</h2>
                 <p className="mt-4 text-sm leading-relaxed text-warm-white/88 md:text-base">
-                  下班回家泡一壶茶的时候，桌上大概就是这个样子。
+                  {heroCard?.body || "下班回家泡一壶茶的时候，桌上大概就是这个样子。"}
                 </p>
               </div>
             </div>
@@ -183,7 +218,7 @@ export default async function CeramicsPage() {
               <h2 className="mt-3 font-serif text-3xl text-ink">慢慢喜欢上的器物</h2>
             </div>
             <div className="mt-10 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-              {learningItems.map((item) => (
+              {learningItemList.map((item) => (
                 <article
                   key={item.title}
                   className="rounded-lg border border-divider/45 bg-warm-white/80 p-6 shadow-[0_12px_34px_rgba(80,64,42,0.04)]"
@@ -202,20 +237,21 @@ export default async function CeramicsPage() {
           <section className="grid gap-10 lg:grid-cols-[0.95fr_1.05fr] lg:items-center">
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-card">
               <Image
-                src={images.handbookWinterTea}
-                alt="简单茶桌记录"
+                src={teaRecord?.image || images.handbookWinterTea}
+                alt={teaRecord?.title || "简单茶桌记录"}
                 fill
+                unoptimized
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 560px"
               />
             </div>
             <div>
               <p className="font-display text-xs tracking-[0.24em] text-warm-gray/75">
-                Tea Table
+                {teaRecord?.eyebrow || "Tea Table"}
               </p>
-              <h2 className="mt-3 font-serif text-3xl text-ink">茶桌记录</h2>
+              <h2 className="mt-3 font-serif text-3xl text-ink">{teaRecord?.title || "茶桌记录"}</h2>
               <p className="mt-6 whitespace-pre-line text-[17px] leading-[1.9] text-ink/84">
-                {`今天只是随手泡了一壶茶。
+                {teaRecord?.body || `今天只是随手泡了一壶茶。
 
 一只浅色茶杯，
 一块旧一点的桌布，
@@ -277,7 +313,7 @@ export default async function CeramicsPage() {
               <h2 className="mt-3 font-serif text-3xl text-ink">买前会想的事</h2>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-4">
-              {choosingNotes.map((item, index) => (
+              {choosingNoteList.map((item, index) => (
                 <article key={item.title} className="rounded-lg border border-divider/40 bg-paper/70 p-5">
                   <p className="text-xs text-tea/70">0{index + 1}</p>
                   <h3 className="mt-2 font-serif text-xl text-ink">{item.title}</h3>
@@ -295,11 +331,11 @@ export default async function CeramicsPage() {
             <div className="grid gap-10 lg:grid-cols-[0.75fr_1.25fr] lg:items-start">
               <div>
                 <p className="font-display text-xs tracking-[0.24em] text-warm-gray/75">
-                  Tea Corner
+                  {teaCornerIntro?.eyebrow || "Tea Corner"}
                 </p>
-                <h2 className="mt-3 font-serif text-3xl text-ink">常待的喝茶角落</h2>
+                <h2 className="mt-3 font-serif text-3xl text-ink">{teaCornerIntro?.title || "常待的喝茶角落"}</h2>
                 <p className="mt-6 whitespace-pre-line text-[17px] leading-[1.9] text-ink/84">
-                  {`不一定要有很大的茶室。
+                  {teaCornerIntro?.body || `不一定要有很大的茶室。
 
 一个小桌面、
 一盏灯、
@@ -308,13 +344,14 @@ export default async function CeramicsPage() {
                 </p>
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
-                {teaSpace.map((item) => (
+                {teaSpaceList.map((item) => (
                   <article key={item.title}>
                     <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-card">
                       <Image
                         src={item.image}
                         alt={item.title}
                         fill
+                        unoptimized
                         className="object-cover"
                         sizes="(max-width: 640px) 100vw, 320px"
                       />

@@ -2,6 +2,9 @@ import Image from "next/image";
 import { PageHeader } from "@/components/PageHeader";
 import { FadeIn } from "@/components/FadeIn";
 import { images } from "@/lib/images";
+import { getSiteModulesFromNotion } from "@/lib/notion";
+
+export const dynamic = "force-dynamic";
 
 const habitList = ["待办", "饮食", "花销", "睡眠", "习惯打卡"];
 
@@ -127,13 +130,40 @@ function NotebookPreview() {
   );
 }
 
-export default function HandbookPage() {
+export default async function HandbookPage() {
+  const notionModules = await getSiteModulesFromNotion("手帐小记");
+  const getModule = (module: string) => notionModules.filter((item) => item.module === module);
+  const pageHeader = getModule("页面标题")[0];
+  const currentMethod = getModule("记录方式")[0];
+  const notionHandbookTypes = getModule("我的手帐分类");
+  const notionDetailNotes = getModule("最近喜欢的手帐细节");
+  const xiaohongshuNotes = getModule("小红书手帐风格")[0];
+  const handbookTypeItems = notionHandbookTypes.length
+    ? notionHandbookTypes.map((item, index) => {
+        const fallback = handbookTypes[index % handbookTypes.length];
+
+        return {
+          title: item.title,
+          image: item.image || fallback.image,
+          body: item.body || fallback.body,
+          marks: item.tags.length ? item.tags : fallback.marks,
+        };
+      })
+    : handbookTypes;
+  const detailNoteItems = notionDetailNotes.length
+    ? notionDetailNotes.map((item) => ({
+        title: item.title,
+        body: item.body,
+      }))
+    : detailNotes;
+  const currentMethodTags = currentMethod?.tags.length ? currentMethod.tags : habitList;
+
   return (
     <div className="paper-texture pb-24">
       <PageHeader
-        title="手帐小记"
-        subtitle="Handbook Lab"
-        description={`以前总觉得手帐是“好看”。
+        title={pageHeader?.title || "手帐小记"}
+        subtitle={pageHeader?.eyebrow || "Handbook Lab"}
+        description={pageHeader?.body || `以前总觉得手帐是“好看”。
 后来发现，它其实是在帮人整理生活。`}
       />
 
@@ -143,13 +173,13 @@ export default function HandbookPage() {
             <NotebookPreview />
             <div>
               <p className="font-display text-xs tracking-[0.24em] text-warm-gray/75">
-                Current Method
+                {currentMethod?.eyebrow || "Current Method"}
               </p>
               <h2 className="mt-3 font-serif text-3xl text-ink">
-                最近开始认真记录每天的生活
+                {currentMethod?.title || "最近开始认真记录每天的生活"}
               </h2>
               <p className="mt-6 whitespace-pre-line text-[17px] leading-[1.9] text-ink/84">
-                {`以前总觉得：
+                {currentMethod?.body || `以前总觉得：
 
 手帐是用来“做漂亮”的。
 
@@ -159,7 +189,7 @@ export default function HandbookPage() {
 帮人把生活一点点整理清楚。`}
               </p>
               <div className="mt-6 flex flex-wrap gap-2">
-                {habitList.map((item) => (
+                {currentMethodTags.map((item) => (
                   <span
                     key={item}
                     className="rounded bg-tag px-3 py-1 text-xs text-tea"
@@ -184,7 +214,7 @@ export default function HandbookPage() {
               <h2 className="mt-3 font-serif text-3xl text-ink">我的手帐分类</h2>
             </div>
             <div className="mt-10 grid gap-6 md:grid-cols-2">
-              {handbookTypes.map((item) => (
+              {handbookTypeItems.map((item) => (
                 <article
                   key={item.title}
                   className="grid gap-5 rounded-lg border border-divider/45 bg-warm-white/80 p-5 shadow-[0_12px_34px_rgba(80,64,42,0.045)] sm:grid-cols-[170px_1fr]"
@@ -194,6 +224,7 @@ export default function HandbookPage() {
                       src={item.image}
                       alt={item.title}
                       fill
+                      unoptimized
                       className="object-cover"
                       sizes="(max-width: 640px) 100vw, 180px"
                     />
@@ -226,7 +257,7 @@ export default function HandbookPage() {
               <h2 className="mt-3 font-serif text-3xl text-ink">最近喜欢的手帐细节</h2>
             </div>
             <div className="mt-10 grid gap-5 md:grid-cols-4">
-              {detailNotes.map((note) => (
+              {detailNoteItems.map((note) => (
                 <article key={note.title} className="rounded-lg border border-divider/40 bg-paper/70 p-5">
                   <h3 className="font-serif text-xl text-ink">{note.title}</h3>
                   <p className="mt-4 whitespace-pre-line text-sm leading-[1.85] text-ink/78">
@@ -242,22 +273,23 @@ export default function HandbookPage() {
           <section className="grid gap-10 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
             <div className="relative aspect-[4/3] overflow-hidden rounded-lg shadow-card">
               <Image
-                src={images.handbookWarmAutumnDesk}
-                alt="手帐桌面"
+                src={xiaohongshuNotes?.image || images.handbookWarmAutumnDesk}
+                alt={xiaohongshuNotes?.title || "手帐桌面"}
                 fill
+                unoptimized
                 className="object-cover"
                 sizes="(max-width: 1024px) 100vw, 460px"
               />
             </div>
             <div>
               <p className="font-display text-xs tracking-[0.24em] text-warm-gray/75">
-                Xiaohongshu Notes
+                {xiaohongshuNotes?.eyebrow || "Xiaohongshu Notes"}
               </p>
               <h2 className="mt-3 font-serif text-3xl text-ink">
-                最近浏览的小红书手帐风格
+                {xiaohongshuNotes?.title || "最近浏览的小红书手帐风格"}
               </h2>
               <p className="mt-6 whitespace-pre-line text-[17px] leading-[1.9] text-ink/84">
-                {`最近很喜欢看别人记录生活的手帐。
+                {xiaohongshuNotes?.body || `最近很喜欢看别人记录生活的手帐。
 
 比起特别复杂的拼贴，
 更喜欢那种：

@@ -62,12 +62,28 @@ export type NotionObjectItem = {
   image: string;
 };
 
+export type NotionSiteModule = {
+  title: string;
+  page: string;
+  module: string;
+  eyebrow: string;
+  body: string;
+  tags: string[];
+  href: string;
+  action: string;
+  date: string;
+  enabled: boolean;
+  order: number;
+  image: string;
+};
+
 export const notionToken = process.env.NOTION_TOKEN;
 
 export const databaseIds = {
   home: process.env.NOTION_HOME_FEATURED_DATABASE_ID,
   cats: process.env.NOTION_CATS_DAILY_DATABASE_ID,
   objects: process.env.NOTION_OBJECTS_COLLECTION_DATABASE_ID,
+  siteModules: process.env.NOTION_SITE_MODULES_DATABASE_ID,
 };
 
 function plainText(items?: Array<{ plain_text?: string }>) {
@@ -108,6 +124,10 @@ function select(page: NotionPage, key: string) {
 
 function multiSelect(page: NotionPage, key: string) {
   return page.properties[key]?.multi_select?.map((item) => item.name).filter(Boolean).join("、") || "";
+}
+
+function multiSelectArray(page: NotionPage, key: string) {
+  return page.properties[key]?.multi_select?.flatMap((item) => (item.name ? [item.name] : [])) || [];
 }
 
 function date(page: NotionPage, key: string) {
@@ -293,5 +313,27 @@ export async function getObjectsCollectionFromNotion() {
       image: fileUrl(page, "图片"),
     }))
     .filter((item) => item.visible && item.name)
+    .sort((a, b) => a.order - b.order);
+}
+
+export async function getSiteModulesFromNotion(pageName: string) {
+  const pages = await queryDatabase(databaseIds.siteModules);
+
+  return pages
+    .map((page, index): NotionSiteModule => ({
+      title: title(page, "标题"),
+      page: firstSelect(page, ["页面", "所属页面"]),
+      module: firstSelect(page, ["模块", "模块名称"]),
+      eyebrow: firstText(page, ["英文小字", "副标题", "小标题"]) || firstSelect(page, ["英文小字", "副标题", "小标题"]),
+      body: firstText(page, ["内容", "正文", "摘要", "描述", "卡片描述文字"]),
+      tags: multiSelectArray(page, "标签"),
+      href: firstUrl(page, ["链接", "跳转链接", "页面链接"]),
+      action: firstText(page, ["按钮", "按钮文字", "链接文字"]),
+      date: date(page, "日期"),
+      enabled: checkbox(page, "是否启用") || checkbox(page, "是否显示"),
+      order: number(page, "排序", index + 1),
+      image: fileUrl(page, "图片"),
+    }))
+    .filter((item) => item.enabled && item.page === pageName && item.title)
     .sort((a, b) => a.order - b.order);
 }
