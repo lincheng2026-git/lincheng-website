@@ -25,7 +25,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Unsupported image host" }, { status: 400 });
   }
 
-  const response = await fetch(imageUrl, { cache: "no-store" });
+  const response = await fetch(imageUrl, { next: { revalidate: 86400 } });
 
   if (!response.ok) {
     return NextResponse.json({ error: "Image fetch failed" }, { status: response.status });
@@ -37,7 +37,7 @@ export async function GET(request: NextRequest) {
   return new NextResponse(body, {
     headers: {
       "Content-Type": contentType,
-      "Cache-Control": "public, max-age=300",
+      "Cache-Control": "public, max-age=86400, s-maxage=86400, stale-while-revalidate=604800",
     },
   });
 }

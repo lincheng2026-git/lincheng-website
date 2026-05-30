@@ -42,13 +42,27 @@ export function BeforeAfter({
       ref={containerRef}
       className="relative aspect-[16/10] w-full cursor-ew-resize select-none overflow-hidden rounded-lg shadow-card"
     >
-      <Image src={after} alt={afterLabel} fill className="object-cover" sizes="(max-width: 1200px) 100vw" />
+      <Image
+        src={after}
+        alt={afterLabel}
+        fill
+        className="object-cover"
+        sizes="(max-width: 1024px) 100vw, 960px"
+        quality={78}
+      />
       <div
         className="absolute inset-0 overflow-hidden"
         style={{ width: `${position}%` }}
       >
         <div className="relative h-full" style={{ width: `${100 / (position / 100 || 1)}%` }}>
-          <Image src={before} alt={beforeLabel} fill className="object-cover" sizes="(max-width: 1200px) 100vw" />
+          <Image
+            src={before}
+            alt={beforeLabel}
+            fill
+            className="object-cover"
+            sizes="(max-width: 1024px) 100vw, 960px"
+            quality={78}
+          />
         </div>
       </div>
       <div

@@ -193,9 +193,10 @@ export default async function SongAestheticPage() {
                   src={intro?.image || images.handbookWinterTea}
                   alt={intro?.title || "纸张、茶与暖光"}
                   fill
-                  unoptimized
+                  priority
                   className="object-cover"
                   sizes="(max-width: 1024px) 100vw, 620px"
+                  quality={82}
                 />
               </div>
               {colorItems.slice(0, 2).map((color) => (
@@ -225,9 +226,9 @@ export default async function SongAestheticPage() {
                     src={note.image}
                     alt={note.title}
                     fill
-                    unoptimized
                     className="object-cover"
                     sizes="(max-width: 1024px) 100vw, 560px"
+                    quality={78}
                   />
                 </div>
                 <div className="lg:px-8">
@@ -299,9 +300,9 @@ export default async function SongAestheticPage() {
                       src={item.image}
                       alt={item.title}
                       fill
-                      unoptimized
                       className="object-cover transition duration-500 group-hover:scale-[1.03]"
-                      sizes="(max-width: 640px) 100vw, 25vw"
+                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                      quality={76}
                     />
                   </div>
                   <h3 className="mt-4 font-serif text-xl text-ink">{item.title}</h3>
