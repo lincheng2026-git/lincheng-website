@@ -2,6 +2,7 @@ import { CatsPageClient, type CatNote } from "@/components/CatsPageClient";
 import { getCatsDailyFromNotion } from "@/lib/notion";
 
 export const metadata = { title: "猫咪宇宙" };
+export const dynamic = "force-dynamic";
 
 const fallbackCatNotes: CatNote[] = [
   {

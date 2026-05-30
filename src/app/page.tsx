@@ -5,6 +5,8 @@ import { siteConfig } from "@/lib/data";
 import { images } from "@/lib/images";
 import { getHomeFeaturedFromNotion } from "@/lib/notion";
 
+export const dynamic = "force-dynamic";
+
 const momentCollected = {
   image: images.songSpaceBambooRain,
   body: `最近开始越来越喜欢：

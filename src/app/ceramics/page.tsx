@@ -4,6 +4,8 @@ import { FadeIn } from "@/components/FadeIn";
 import { images } from "@/lib/images";
 import { getObjectsCollectionFromNotion } from "@/lib/notion";
 
+export const dynamic = "force-dynamic";
+
 const learningItems = [
   {
     title: "青瓷",

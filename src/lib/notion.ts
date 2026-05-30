@@ -124,7 +124,7 @@ async function queryDatabase(databaseId?: string) {
           "Notion-Version": "2022-06-28",
         },
         body: JSON.stringify(body),
-        next: { revalidate: 300 },
+        cache: "no-store",
       });
 
     let response = await request({
